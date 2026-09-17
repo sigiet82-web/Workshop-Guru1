@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viskositas — Pembelajaran Interaktif</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0E1620;
+    --surface: #16212C;
+    --surface-alt: #1E2C39;
+    --border: #2A3946;
+    --text-primary: #ECEFF1;
+    --text-secondary: #93A1AB;
+    --amber: #E8A33D;
+    --amber-dark: #7A5420;
+    --teal: #57C7BE;
+    --teal-dark: #1E4A46;
+    --danger: #E2726F;
+    --success: #6FBF8B;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.65;
+  }
+
+  h1, h2, h3{
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    margin: 0 0 0.4em;
+    line-height: 1.2;
+  }
+
+  h1{ font-size: clamp(2.4rem, 6vw, 3.6rem); font-weight: 600; }
+  h2{ font-size: clamp(1.5rem, 3vw, 1.9rem); }
+  h3{ font-size: 1.1rem; }
+
+  p{ color: var(--text-secondary); margin: 0 0 1em; max-width: 68ch; }
+
+  a{ color: var(--teal); }
+
+  .wrap{ max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding: 88px 0 64px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .hero .wrap{
+    display: grid;
+    grid-template-columns: 1.3fr 0.9fr;
+    gap: 48px;
+    align-items: center;
+  }
+  .hero-text .lede{ font-size: 1.05rem; color: var(--text-secondary); }
+
+  .drip-scene{
+    position: relative;
+    height: 220px;
+    background: linear-gradient(180deg, transparent 0%, var(--surface) 100%);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .drip{
+    position: absolute;
+    top: -14px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  .drip.d1{ left: 22%; background: var(--teal); animation: fall 1.4s linear infinite; }
+  .drip.d2{ left: 50%; background: var(--amber); animation: fall 3.6s linear infinite; }
+  .drip.d3{ left: 78%; background: #C97A2B; animation: fall 5.8s linear infinite; }
+  @keyframes fall{
+    0%{ top: -14px; }
+    100%{ top: 220px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .drip{ animation: none; top: 90px; }
+  }
+
+  /* ---------- Sections ---------- */
+  section{ padding: 64px 0; border-bottom: 1px solid var(--border); }
+  section:last-of-type{ border-bottom: none; }
+
+  /* ---------- Viscosity comparison bars ---------- */
+  .scale{
+    margin-top: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .scale-row{
+    display: grid;
+    grid-template-columns: 110px 1fr 90px;
+    align-items: center;
+    gap: 14px;
+  }
+  .scale-row .label{ font-size: 0.92rem; color: var(--text-primary); }
+  .scale-track{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    height: 14px;
+    overflow: hidden;
+  }
+  .scale-fill{ height: 100%; border-radius: 6px 0 0 6px; }
+  .scale-row .value{ font-size: 0.82rem; color: var(--text-secondary); text-align: right; }
+
+  /* ---------- Simulation ---------- */
+  .sim-layout{
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 32px;
+    margin-top: 28px;
+  }
+  @media (max-width: 720px){
+    .sim-layout{ grid-template-columns: 1fr; }
+    .hero .wrap{ grid-template-columns: 1fr; }
+  }
+
+  .tube-wrap{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .tube{
+    position: relative;
+    width: 90px;
+    height: 320px;
+    margin: 0 auto;
+    border: 2px solid var(--border);
+    border-radius: 0 0 20px 20px;
+    overflow: hidden;
+    background: var(--surface-alt);
+  }
+  .fluid{
+    position: absolute;
+    inset: 0;
+    transition: background 0.4s ease;
+  }
+  .ball{
+    position: absolute;
+    left: 50%;
+    top: 8px;
+    width: 22px;
+    height: 22px;
+    margin-left: -11px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #E7EBEE, #8B98A1 70%);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    transition: top linear;
+  }
+
+  .readout{
+    margin-top: 16px;
+    text-align: center;
+  }
+  .readout .metric{
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    color: var(--amber);
+  }
+  .readout .metric-label{
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+  }
+
+  .controls{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .preset-row{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+  .preset-btn{
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 7px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .preset-btn:hover{ border-color: var(--teal); }
+  .preset-btn.active{ border-color: var(--amber); color: var(--amber); }
+
+  .field{ margin-bottom: 20px; }
+  .field-top{
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    margin-bottom: 8px;
+  }
+  .field-top span:last-child{ color: var(--teal); font-variant-numeric: tabular-nums; }
+
+  input[type="range"]{
+    width: 100%;
+    accent-color: var(--teal);
+  }
+
+  .drop-btn{
+    width: 100%;
+    background: var(--amber);
+    color: #2A1B04;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+  .drop-btn:hover{ background: #F0B559; }
+
+  .formula-box{
+    margin-top: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--teal);
+    border-radius: 4px;
+    padding: 18px 22px;
+    font-family: 'Fraunces', serif;
+    font-size: 1.05rem;
+  }
+  .formula-box small{
+    display: block;
+    margin-top: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+
+  .note{
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-top: 12px;
+  }
+
+  /* ---------- Quiz ---------- */
+  .quiz-item{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin-bottom: 16px;
+  }
+  .quiz-item p.q{ color: var(--text-primary); font-weight: 500; margin-bottom: 12px; }
+  .opt{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    cursor: pointer;
+    color: var(--text-secondary);
+  }
+  .opt input{ accent-color: var(--teal); }
+  .quiz-item.correct{ border-color: var(--success); }
+  .quiz-item.wrong{ border-color: var(--danger); }
+  .quiz-feedback{
+    margin-top: 10px;
+    font-size: 0.88rem;
+    display: none;
+  }
+  .quiz-item.correct .quiz-feedback{ display:block; color: var(--success); }
+  .quiz-item.wrong .quiz-feedback{ display:block; color: var(--danger); }
+
+  .check-btn{
+    background: var(--teal);
+    color: #06211E;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 22px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+  .check-btn:hover{ background: #78D6CE; }
+
+  .score{ margin-top: 14px; font-size: 0.95rem; color: var(--text-primary); }
+
+  footer{ padding: 40px 0 60px; }
+  footer p{ font-size: 0.82rem; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-text">
+      <h1>Viskositas</h1>
+      <p class="lede">Tuang air dan tuang madu dari ketinggian yang sama — satu langsung mengalir, satu lagi menetes pelan. Perbedaan itu disebut viskositas: seberapa besar fluida menolak untuk mengalir. Halaman ini menjelaskan konsepnya dan membiarkan kamu mengujinya lewat simulasi.</p>
+    </div>
+    <div class="drip-scene" aria-hidden="true">
+      <div class="drip d1"></div>
+      <div class="drip d2"></div>
+      <div class="drip d3"></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section id="konsep">
+    <div class="wrap">
+      <h2>Apa itu viskositas?</h2>
+      <p>Viskositas adalah ukuran gesekan internal sebuah fluida — seberapa kuat lapisan-lapisan molekulnya saling menahan saat bergerak satu terhadap yang lain. Fluida dengan viskositas rendah, seperti air, mengalir dengan mudah. Fluida dengan viskositas tinggi, seperti madu atau oli, mengalir lambat karena molekulnya lebih "lengket" satu sama lain.</p>
+      <p>Satuan viskositas dinamis adalah pascal-detik (Pa·s). Semakin besar angkanya, semakin kental fluida tersebut.</p>
+
+      <div class="scale">
+        <div class="scale-row">
+          <div class="label">Air</div>
+          <div class="scale-track"><div class="scale-fill" style="width: 3%; background: var(--teal);"></div></div>
+          <div class="value">0.001 Pa·s</div>
+        </div>
+        <div class="scale-row">
+          <div class="label">Minyak goreng</div>
+          <div class="scale-track"><div class="scale-fill" style="width: 18%; background: #C9A227;"></div></div>
+          <div class="value">0.05 Pa·s</div>
+        </div>
+        <div class="scale-row">
+          <div class="label">Oli mesin</div>
+          <div class="scale-track"><div class="scale-fill" style="width: 34%; background: #C9852A;"></div></div>
+          <div class="value">0.3 Pa·s</div>
+        </div>
+        <div class="scale-row">
+          <div class="label">Madu</div>
+          <div class="scale-track"><div class="scale-fill" style="width: 62%; background: var(--amber);"></div></div>
+          <div class="value">5 Pa·s</div>
+        </div>
+        <div class="scale-row">
+          <div class="label">Sirup maple</div>
+          <div class="scale-track"><div class="scale-fill" style="width: 88%; background: #B5551E;"></div></div>
+          <div class="value">20 Pa·s</div>
+        </div>
+      </div>
+      <p class="note">Skala di atas logaritmik agar rentang nilai yang sangat lebar tetap bisa dibandingkan dalam satu tampilan.</p>
+    </div>
+  </section>
+
+  <section id="simulasi">
+    <div class="wrap">
+      <h2>Simulasi: bola jatuh dalam fluida</h2>
+      <p>Ubah jenis fluida atau geser nilai viskositasnya, lalu jatuhkan bola. Semakin kental fluidanya, semakin lambat bola itu bergerak turun. Panel di kanan menghitung kecepatan terminal bola secara nyata menggunakan Hukum Stokes.</p>
+
+      <div class="sim-layout">
+        <div class="tube-wrap">
+          <div class="tube">
+            <div class="fluid" id="fluid"></div>
+            <div class="ball" id="ball"></div>
+          </div>
+          <div class="readout">
+            <div class="metric" id="vtValue">0.00 m/s</div>
+            <div class="metric-label">kecepatan terminal (teori)</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="preset-row" id="presets"></div>
+
+          <div class="field">
+            <div class="field-top"><span>Viskositas fluida (η)</span><span id="etaLabel">0.001 Pa·s</span></div>
+            <input type="range" id="etaSlider" min="0" max="100" step="0.5" value="0">
+          </div>
+
+          <div class="field">
+            <div class="field-top"><span>Jari-jari bola</span><span id="radiusLabel">5 mm</span></div>
+            <input type="range" id="radiusSlider" min="1" max="15" step="0.5" value="5">
+          </div>
+
+          <button class="drop-btn" id="dropBtn">Jatuhkan bola</button>
+        </div>
+      </div>
+
+      <div class="formula-box">
+        v = 2r²(ρ<sub>bola</sub> − ρ<sub>fluida</sub>)g / 9η
+        <small>Hukum Stokes berlaku untuk bola kecil yang bergerak lambat (aliran laminar) dalam fluida kental. Massa jenis bola diasumsikan seperti baja (7800 kg/m³) dan massa jenis fluida diasumsikan tetap (1000 kg/m³) agar simulasi mudah diikuti. Kecepatan animasi di tabung diskalakan secara logaritmik supaya perbedaannya tetap terlihat jelas di layar — angka kecepatan terminal di atas tetap dihitung dari rumus asli.</small>
+      </div>
+    </div>
+  </section>
+
+  <section id="kuis">
+    <div class="wrap">
+      <h2>Cek pemahaman</h2>
+      <p>Tiga pertanyaan singkat untuk menguji pemahamanmu.</p>
+
+      <div class="quiz-item" data-answer="madu">
+        <p class="q">1. Fluida manakah yang memiliki viskositas lebih tinggi?</p>
+        <label class="opt"><input type="radio" name="q1" value="air"> Air</label>
+        <label class="opt"><input type="radio" name="q1" value="madu"> Madu</label>
+        <div class="quiz-feedback"></div>
+      </div>
+
+      <div class="quiz-item" data-answer="menurun">
+        <p class="q">2. Jika viskositas fluida meningkat, apa yang terjadi pada kecepatan terminal bola yang jatuh di dalamnya?</p>
+        <label class="opt"><input type="radio" name="q2" value="meningkat"> Meningkat</label>
+        <label class="opt"><input type="radio" name="q2" value="menurun"> Menurun</label>
+        <label class="opt"><input type="radio" name="q2" value="tetap"> Tetap sama</label>
+        <div class="quiz-feedback"></div>
+      </div>
+
+      <div class="quiz-item" data-answer="stokes">
+        <p class="q">3. Hukum yang menjelaskan gaya hambat pada bola kecil yang bergerak lambat dalam fluida kental disebut?</p>
+        <label class="opt"><input type="radio" name="q3" value="newton"> Hukum Newton II</label>
+        <label class="opt"><input type="radio" name="q3" value="stokes"> Hukum Stokes</label>
+        <label class="opt"><input type="radio" name="q3" value="pascal"> Hukum Pascal</label>
+        <div class="quiz-feedback"></div>
+      </div>
+
+      <button class="check-btn" id="checkBtn">Periksa jawaban</button>
+      <div class="score" id="scoreText"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Dibuat untuk pembelajaran fisika fluida. Nilai viskositas fluida nyata bervariasi tergantung suhu dan komposisi — angka di halaman ini adalah perkiraan umum pada suhu ruang.</p>
+  </div>
+</footer>
+
+<script>
+  // ---------- Physics ----------
+  const ETA_MIN = 0.001;
+  const ETA_MAX = 50;
+  const RHO_BALL = 7800;
+  const RHO_FLUID = 1000;
+  const G = 9.8;
+
+  const presets = [
+    { name: "Air", eta: 0.001, color: "#2E7C9C" },
+    { name: "Minyak goreng", eta: 0.05, color: "#C9A227" },
+    { name: "Oli mesin", eta: 0.3, color: "#8A5A1E" },
+    { name: "Madu", eta: 5, color: "#B87A15" },
+    { name: "Sirup maple", eta: 20, color: "#7A3D12" }
+  ];
+
+  const etaSlider = document.getElementById('etaSlider');
+  const radiusSlider = document.getElementById('radiusSlider');
+  const etaLabel = document.getElementById('etaLabel');
+  const radiusLabel = document.getElementById('radiusLabel');
+  const vtValue = document.getElementById('vtValue');
+  const fluidEl = document.getElementById('fluid');
+  const ballEl = document.getElementById('ball');
+  const dropBtn = document.getElementById('dropBtn');
+  const presetRow = document.getElementById('presets');
+
+  function sliderToEta(val){
+    return ETA_MIN * Math.pow(ETA_MAX / ETA_MIN, val / 100);
+  }
+  function etaToSlider(eta){
+    return 100 * Math.log(eta / ETA_MIN) / Math.log(ETA_MAX / ETA_MIN);
+  }
+  function formatEta(eta){
+    if(eta < 0.01) return eta.toFixed(4) + " Pa·s";
+    if(eta < 1) return eta.toFixed(3) + " Pa·s";
+    return eta.toFixed(1) + " Pa·s";
+  }
+  function formatVelocity(v){
+    if(v >= 1) return v.toFixed(2) + " m/s";
+    if(v * 100 >= 1) return (v * 100).toFixed(2) + " cm/s";
+    return (v * 1000).toFixed(2) + " mm/s";
+  }
+  function computeVt(eta, radiusMM){
+    const r = radiusMM / 1000;
+    return (2 * r * r * (RHO_BALL - RHO_FLUID) * G) / (9 * eta);
+  }
+  function fluidColorFor(val){
+    // interpolate color across preset stops based on slider position
+    const stops = presets.map(p => ({ pos: etaToSlider(p.eta), color: p.color }));
+    stops.sort((a,b)=>a.pos-b.pos);
+    if(val <= stops[0].pos) return stops[0].color;
+    if(val >= stops[stops.length-1].pos) return stops[stops.length-1].color;
+    for(let i=0; i<stops.length-1; i++){
+      if(val >= stops[i].pos && val <= stops[i+1].pos){
+        return stops[i+1].color; // simple step, avoids heavy hex interpolation
+      }
+    }
+    return stops[0].color;
+  }
+
+  function updateReadout(){
+    const val = parseFloat(etaSlider.value);
+    const eta = sliderToEta(val);
+    const radius = parseFloat(radiusSlider.value);
+    const vt = computeVt(eta, radius);
+
+    etaLabel.textContent = formatEta(eta);
+    radiusLabel.textContent = radius.toFixed(1) + " mm";
+    vtValue.textContent = formatVelocity(vt);
+    fluidEl.style.background = fluidColorFor(val);
+
+    document.querySelectorAll('.preset-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', Math.abs(etaToSlider(presets[i].eta) - val) < 1.5);
+    });
+  }
+
+  function renderPresets(){
+    presets.forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'preset-btn';
+      btn.textContent = p.name;
+      btn.addEventListener('click', () => {
+        etaSlider.value = etaToSlider(p.eta);
+        updateReadout();
+        dropBall();
+      });
+      presetRow.appendChild(btn);
+    });
+  }
+
+  function dropBall(){
+    const val = parseFloat(etaSlider.value);
+    const durMin = 0.5, durMax = 6.5;
+    const duration = durMin + (durMax - durMin) * (val / 100);
+
+    ballEl.style.transition = 'none';
+    ballEl.style.top = '8px';
+    // force reflow so the reset takes effect before the new transition starts
+    void ballEl.offsetHeight;
+
+    const tubeHeight = ballEl.parentElement.clientHeight;
+    const ballSize = ballEl.clientHeight;
+    ballEl.style.transition = 'top ' + duration.toFixed(2) + 's linear';
+    ballEl.style.top = (tubeHeight - ballSize - 10) + 'px';
+  }
+
+  etaSlider.addEventListener('input', updateReadout);
+  radiusSlider.addEventListener('input', updateReadout);
+  dropBtn.addEventListener('click', dropBall);
+
+  renderPresets();
+  updateReadout();
+
+  // ---------- Quiz ----------
+  const checkBtn = document.getElementById('checkBtn');
+  const scoreText = document.getElementById('scoreText');
+
+  checkBtn.addEventListener('click', () => {
+    const items = document.querySelectorAll('.quiz-item');
+    let score = 0;
+    let answeredAll = true;
+
+    items.forEach(item => {
+      const name = item.querySelector('input').name;
+      const selected = item.querySelector('input:checked');
+      const feedback = item.querySelector('.quiz-feedback');
+      item.classList.remove('correct', 'wrong');
+
+      if(!selected){
+        answeredAll = false;
+        return;
+      }
+      if(selected.value === item.dataset.answer){
+        item.classList.add('correct');
+        feedback.textContent = 'Benar.';
+        score++;
+      } else {
+        item.classList.add('wrong');
+        feedback.textContent = 'Belum tepat. Coba tinjau lagi bagian simulasi di atas.';
+      }
+    });
+
+    if(!answeredAll){
+      scoreText.textContent = 'Jawab semua pertanyaan dulu, ya.';
+    } else {
+      scoreText.textContent = 'Skor kamu: ' + score + ' dari ' + items.length + '.';
+    }
+  });
+</script>
+
+</body>
+</html>
